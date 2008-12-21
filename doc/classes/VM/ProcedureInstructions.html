@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Module: VM::ProcedureInstructions</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+    <div id="classHeader">
+        <table class="header-table">
+        <tr class="top-aligned-row">
+          <td><strong>Module</strong></td>
+          <td class="class-name-in-header">VM::ProcedureInstructions</td>
+        </tr>
+        <tr class="top-aligned-row">
+            <td><strong>In:</strong></td>
+            <td>
+                <a href="../../files/lib/vm/procedure_instructions_rb.html">
+                lib/vm/procedure_instructions.rb
+                </a>
+        <br />
+            </td>
+        </tr>
+
+        </table>
+    </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+
+
+   </div>
+
+    <div id="method-list">
+      <h3 class="section-bar">Methods</h3>
+
+      <div class="name-list">
+      <a href="#M000071">call</a>&nbsp;&nbsp;
+      <a href="#M000070">rbm</a>&nbsp;&nbsp;
+      <a href="#M000072">ret</a>&nbsp;&nbsp;
+      </div>
+    </div>
+
+  </div>
+
+
+    <!-- if includes -->
+
+    <div id="section">
+
+
+
+
+
+      
+
+
+    <!-- if method_list -->
+    <div id="methods">
+      <h3 class="section-bar">Public Instance methods</h3>
+
+      <div id="method-M000071" class="method-detail">
+        <a name="M000071"></a>
+
+        <div class="method-heading">
+          <a href="ProcedureInstructions.src/M000071.html" target="Code" class="method-signature"
+            onclick="popupCode('ProcedureInstructions.src/M000071.html');return false;">
+          <span class="method-name">call</span><span class="method-args">(jmp_addr, no_params, level)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+CALL adr_salt nr_par nivel Apel de subprogram: completeaza un nod nou in
+stiva BAZA, rezerva in stiva de lucru spatiu pentru variabilele locale,
+memoreaza adresa de revenire si executa saltul la codul subprogramului
+apelat.
+</p>
+<p>
+VBAZA = VBAZA + 1 BAZA[VBAZA].LEVEL = nivel BAZA[VBAZA].BLOC = SP - nr_par
++ 1 SP = SP + STIVA[BAZA[VBAZA].BLOC -1].INFO STIVA[BAZA[VBAZA].BLOC -
+1].INFO = NI + 4 NI = adr_salt
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000070" class="method-detail">
+        <a name="M000070"></a>
+
+        <div class="method-heading">
+          <a href="ProcedureInstructions.src/M000070.html" target="Code" class="method-signature"
+            onclick="popupCode('ProcedureInstructions.src/M000070.html');return false;">
+          <span class="method-name">rbm</span><span class="method-args">(dim_var, nr_loc)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+RBM dim_var nr_loc
+</p>
+<p>
+Rezervare marcaj de bloc in stiva de lucru, inaintea rezolvarii unui apel
+de subprogram. Argumentul nr_loc poate fi: 2 - pentru functii, respectiv 1
+- pentru proceduri. Marcajul de bloc va servi pentru:
+</p>
+<p>
+memorarea rezultatului returnat, in cazul functiilor; memorarea adresei de
+revenire, inainte de a da controlul subprogramului apelat. Pana la
+rezolvarea propriu-zisa a apelului (executia unei instructiuni CALL),
+marcajul de bloc pastreaza valoarea dim_var, necesara pentru rezervarea in
+stiva a spatiului pentru variabilele locale ale subprogramului. Se
+mentioneaza faptul ca deasupra marcajului de bloc, in stiva de lucru se va
+afla blocul rezervat subprogramului apelat. Prin urmare, in cazul
+functiilor, locatia in care se memoreaza rezultatul returnat se afla la
+deplasament (-2) fata de inceputul blocului de lucru. Acesta este motivul
+pentru care campul ADREL din TS s-a completat cu valoarea -2 la numele de
+functii (v. Lucrarea nr.8). SP = SP + nr_loc STIVA[SP].INFO = dim_var NI =
+NI + 3
+</p>
+        </div>
+      </div>
+
+      <div id="method-M000072" class="method-detail">
+        <a name="M000072"></a>
+
+        <div class="method-heading">
+          <a href="ProcedureInstructions.src/M000072.html" target="Code" class="method-signature"
+            onclick="popupCode('ProcedureInstructions.src/M000072.html');return false;">
+          <span class="method-name">ret</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+RET
+</p>
+<p>
+Revenire dintr-un subprogram.
+</p>
+<p>
+SP = BAZA[VBAZA].BLOC - 2 NI = STIVA[SP + 1] VBAZA = VBAZA - 1
+</p>
+        </div>
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

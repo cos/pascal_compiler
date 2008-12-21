@@ -3,217 +3,181 @@ require 'atoms'
 module Nonterminals
   include Atom
 
-  def non_terminals
-    return @non_terminals if @non_terminals
-    @non_terminals =
-    {
-    :program_sursa =>
-        [[Keyword.program, Identifier, Limit[';'], :bloc, Limit['.']]],
-    :bloc =>
-        [[:sectiune_const, :sectiune_var, :sectiune_decl_subprog, :instr_comp]],
-    :sectiune_const =>
-        [[Keyword.const , :lista_decl_const],
-        [:epsilon]],
-    :lista_decl_const =>
-        [[:declar_const],
-        [:lista_decl_const, :declar_const]],
-    :sectiune_var =>
-        [[:lista_decl_var],
-         [:epsilon]],
-    :lista_decl_var =>
-        [[:declar_var] ,
-         [:lista_declar_var, :declar_var]],
-    :sectiune_decl_subprog =>
-        [[:lista_decl_subprog],
-         [:epsilon]],
-    :lista_decl_subprog =>
-        [[:decl_subprog],
-         [:lista_decl_subprog, :decl_subprog]],
-    :decl_subprog =>
-        [[:declar_functie],
-         [:declar_procedura]],
-    :declar_const =>
-        [[Identifier, Operator['='], :expresie_statica, Limit[';']]],
-    :declar_var =>
-        [[:lista_id, Limit[':'], :tip, Limit[';']]],
-    :lista_id =>
-        [[Identifier],
-         [:lista_id, Identifier]],
-    :tip =>
-        [[:tip_simplu],
-         [:tip_tablou],
-         [:tip_struct]],
-    :tip_simplu =>
-        [[Keyword.integer],
-         [Keyword.real],
-         [Keyword.char],
-         [Keyword.string]],
-    :tip_tablou =>
-        [[Keyword.array, Operator['['], :expresie_statica, Operator['.'], Operator['.'], :expresie_statica, Operator[']'], Keyword.of, :tip_simplu]],
-    :tip_struct =>
-        [[Keyword.record, :lista_camp, Keyword.end ]],
-    :lista_camp =>
-        [[:decl_simpla],
-         [:lista_camp, Limit[';'], :decl_simpla]],
-    :decl_simpla =>
-        [[:lista_id, Limit[':'], :tip_simplu]],
-    :declar_functie =>
-        [[Keyword.function, :antet_subprog, Limit[':'], :tip_simplu, Limit[';'], :bloc, Limit[';']]],
-    :declar_procedura =>
-        [[Keyword.procedure, :antet_subprog, Limit[';'], :bloc, Limit[';']]],
-    :antet_subprog =>
-        [[Identifier, :param_form]],
-    :param_form =>
-        [[Operator['('], :lista_param_form, Operator[')']],
-         [:epsilon]],
-    :lista_param_form =>
-        [[:declar_par],
-         [:lista_param_form, Limit[';'], :declar_par]],
-    :declar_par =>
-        [[:decl_simpla],
-         [Keyword.var, :decl_simpla]],
-    :expresie_statica =>
-        [[:termen_static],
-         [:expresie_statica, :op_ad, :termen_static]],
-    :termen_static =>
-        [[:factor_static],
-         [:termen_static, :op_mul, :factor_static]],
-    :factor_static =>
-        [[Identifier],
-         [:constanta],
-         [Operator['('],:expresie_statica,Operator[']']]],
-    :op_ad =>
-        [[Operator['+'],
-         [Operator['-']]]],
-    :op_mul =>
-       [[Operator['*']],
-        [Operator['/']],
-        [Keyword.div],
-        [Keyword.mod]],
-    :constanta =>
-        [[Numeric],
-         [String] ],
-    :instr_comp =>
-        [[Keyword.begin,  :lista_instr, Keyword.end],
-         [Keyword.begin,  :lista_instr,Limit[';'], Keyword.end]],
-    :lista_instr =>
-        [[:instr],
-         [:lista_instr, Limit[';'], :instr]],
-    :instr =>
-        [[:instr_atrib],
-         [:instr_if],
-         [:instr_while],
-         [:instr_repeat],
-         [:instr_for],
-         [:instr_case],
-         [:instr_comp],
-         [:instr_read],
-         [:instr_print],
-         [:apel_proc]],
-    :instr_atrib =>
-         [[:variabila, Operator[':='], :expresie]],
-    :variabila =>
-         [[Identifier, Operator['['], :expresie, Operator[']']],
-          [Identifier, Operator['.'], Identifier],
-          [Identifier]],
-    :expresie =>
-         [[:expresie, :op_ad, :termen],
-          [:termen]],
-    :termen =>
-         [[:termen, :op_mul, :factor],
-          [:factor]],
-    :factor =>
-         [[Identifier],
-         [:constanta],
-         [Operator['('], :expresie, Operator[')']],
-         [Identifier, Operator['('], :lista_expresii, Operator[')']],
-         [Identifier, Operator['['], :expresie, Operator[']']],
-         [Identifier, Limit['.'], Identifier]],
-    :lista_expresii =>
-         [[:expresie],
-         [:lista_expresii, :expresie]],
-    :instr_if =>
-          [[Keyword.if, :conditie, Keyword.then, :instr_ramura_else]],
-    :ramura_else =>
-          [[Keyword.else, :instr],
-          [:epsilon]],
-    :conditie =>
-          [[:expr_logica],
-          [Keyword.not, :expr_logica]],
-    :expr_logica =>
-          [[:expr_rel],
-          [:expr_logica, :op_log, :expr_rel]],
-    :op_log =>
-          [[Keyword.and],
-          [Keyword.or]],
-    :expr_rel =>
-          [[:expresie, :op_rel, :expresie],
-          [Operator['('], :expresie, Operator[')']]],
-    :op_rel =>
-          [[Operator['<']],
-           [Operator['>']],
-           [Operator['<=']],
-           [Operator['>=']],
-           [Operator['=']],
-           [Operator['<>']]],
-    :instr_while =>
-          [[Keyword.while, :conditie, Keyword.do, :instr]],
-    :instr_repeat =>
-          [[Keyword.repeat, :instr, Keyword.until, :conditie]],
-    :instr_for =>
-          [[Keyword.for, :variabila, Operator[':='], :expresie, :sens, :expresie, :pas, Keyword.do, :instr]],
-    :sens =>
-          [[Keyword.to],
-          [Keyword.downto]],
-    :pas =>
-          [[Keyword.step, :expresie],
-          [:epsilon]],
-    :instr_case =>
-          [[Keyword.case, :expresie, Keyword.of, :lista_altern, Keyword.end]],
-    }
-    remove_left_recursion(@non_terminals)
-    @non_terminals    
+  def program_sursa
+    i [Keyword.program, Identifier, Limit[';'], :bloc, Limit['.']]
   end
-
-  def remove_left_recursion(nts)
-    keys = nts.keys
-    keys.each_with_index do |key, i|
-      (0...i).each do |j|
-        new_i = []
-        nts[keys[i]].each do |d|
-          if(d[0] == keys[j])
-            d.shift
-            nts[keys[j]].each do |jd|
-              new_i << jd + d
-            end
-          else
-            new_i << d
-          end
-        end
-        new_key, new_arr = remove_direct_left_recursion(keys[i], new_i)
-        nts[keys[i]] = new_i
-        nts[new_key] = new_arr
-      end
-    end
-    nts
+  def bloc
+    i [:sectiune_const, :sectiune_var, :sectiune_decl_subprog, :instr_comp]
   end
-  def remove_direct_left_recursion(key, arr)
-    if arr.find { |d| d[0] == key }
-      betas = arr.find_all {|d| d[0] != key}
-      alphas = arr.find_all {|d| d[0] == key}
-      alphas.each {|d| d.shift }      
-      arr.clear
-      new_key = (key.to_s + '_rest').intern
-      betas.each do |d|
-        arr << d + [new_key]
-      end
-      new_arr = [:epsilon]
-      alphas.each do |d|
-        new_arr << d + [new_key, key]
-      end
-      return new_key, new_arr
-    else
-      return nil
-    end
+  def sectiune_const
+    opt [Keyword.const , :lista_decl_const]
+  end
+  def lista_decl_const
+    i :declar_const
+    several :declar_const
+  end
+  def declar_const
+    ident = i Identifier    
+    i Operator['=']
+    tv = i(:expresie_statica)
+    i Limit[';']
+    st << {:name => ident.name, :type => tv[0], :value => tv[1]}
+  end
+  def sectiune_var
+    several :declar_var
+  end  
+  def sectiune_decl_subprog
+    several :decl_subprog
+  end  
+  def decl_subprog
+    one_of :declar_functie, :declar_procedura
+  end
+  def declar_var
+    i [:lista_id, Limit[':'], :tip, Limit[';']]
+  end
+  def lista_id
+    i Identifier
+    several Identifier
+  end
+  def tip
+    one_of :tip_simplu, :tip_tablou, :tip_struct
+  end
+  def tip_simplu
+    one_of Keyword.integer, Keyword.real, Keyword.char, Keyword.string
+  end
+  def tip_tablou
+    i [Keyword.array, Operator['['], :expresie_statica, Operator['.'], Operator['.'], :expresie_statica, Operator[']'], Keyword.of, :tip_simplu]
+  end
+  def tip_struct
+    i [Keyword.record, :lista_camp, Keyword.end]
+  end
+  def lista_camp
+    i :decl_simpla
+    several [Limit[';'],:decl_simpla]
+  end
+  def decl_simpla
+    i [:lista_id, Limit[':'], :tip_simplu]
+  end
+  def declar_functie
+    i [Keyword.function, :antet_subprog, Limit[':'], :tip_simplu, Limit[';'], :bloc, Limit[';']]
+  end
+  def declar_procedura
+    i [Keyword.procedure, :antet_subprog, Limit[';'], :bloc, Limit[';']]
+  end
+  def antet_subprog
+    i [Identifier, :param_form]
+  end
+  def param_form
+    opt [Operator['('], :lista_param_form, Operator[')']]
+  end
+  def lista_param_form
+    i :declar_par
+    several [Limit[';'],:declar_par]
+  end
+  def declar_par
+    one_of :decl_simpla,
+           [Keyword.var, :decl_simpla]
+  end
+  def expresie_statica
+    i :termen_static
+    several [:op_ad, :termen_static]
+  end
+  def termen_static
+    i :factor_static
+    several [:op_mul, :factor_static]
+  end
+  def factor_static    
+    one_of Identifier, :constanta, [Operator['('],:expresie_statica,Operator[']']]
+  end
+  def op_ad
+    one_of Operator['+'], Operator['-']
+  end
+  def op_mul
+    one_of Operator['*'],Operator['/'],Keyword.div,Keyword.mod
+  end
+  def constanta
+    one_of Numeric, String
+  end
+  def instr_comp
+    i [Keyword.begin, :lista_instr]    
+    opt Limit[';']
+    i Keyword.end
+  end
+  def lista_instr
+    i :instr
+    several [Limit[';'], :instr]
+  end
+  def instr
+    one_of :instr_atrib, :instr_if, :instr_while, :instr_repeat, :instr_for, :instr_case, :instr_comp
+  end
+  def instr_atrib
+    i [:variabila, Operator[':='], :expresie]
+  end
+  def variabila
+    one_of [Identifier, Operator['['], :expresie, Operator[']']],
+           [Identifier,Operator['.'], Identifier],
+           Identifier
+  end
+  def expresie
+    i :termen
+    several [:op_ad, :termen]
+  end
+  def termen
+    i :factor
+    several [:op_mul, :factor]
+  end
+  def factor
+    one_of  :constanta,
+            [Operator['('], :expresie, Operator[')']],
+            [Identifier, Operator['('], :lista_expresii, Operator[')']],
+            [Identifier, Operator['['], :expresie, Operator[']']],
+            [Identifier, Limit['.'], Identifier],
+            Identifier
+  end
+  def lista_expresii
+    i :expresie
+    several :expresie
+  end
+  def instr_if
+    i [Keyword.if, :conditie, Keyword.then, :instr_ramura_else]
+  end
+  def ramura_else
+    opt [Keyword.else, :instr]
+  end
+  def conditie
+    opt Keyword.not
+    i :expr_logica
+  end
+  def expr_logica
+    i :expr_rel
+    opt [:op_log, :expr_logica]
+  end
+  def op_log
+    one_of Keyword.and, Keyword.or
+  end
+  def expr_rel
+    one_of [:expresie, :op_rel, :expresie],
+           [Operator['('], :expresie, Operator[')']]
+  end
+  def op_rel
+    one_of Operator['<'], Operator['>'], Operator['<='], Operator['>='], Operator['='], Operator['<>']
+  end
+  def instr_while
+    i [Keyword.while, :conditie, Keyword.do, :instr]
+  end
+  def instr_repeat
+    i [Keyword.repeat, :instr, Keyword.until, :conditie]
+  end
+  def instr_for
+    i [Keyword.for, :variabila, Operator[':='], :expresie, :sens, :expresie, :pas, Keyword.do, :instr]
+  end
+  def sens
+    one_of Keyword.to, Keyword.downto
+  end
+  def pas
+    opt [Keyword.step, :expresie]
+  end
+  def instr_case
+    i [Keyword.case, :expresie, Keyword.of, :lista_altern, Keyword.end]
   end
 end

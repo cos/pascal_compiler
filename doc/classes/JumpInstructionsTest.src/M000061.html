@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>test_fjp_with_jump (JumpInstructionsTest)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File test/vm/jump_instructions_test.rb, line 14</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">test_fjp_with_jump</span>
+    <span class="ruby-identifier">setvm</span> [<span class="ruby-identifier">:bla</span>, <span class="ruby-identifier">:bla</span>, <span class="ruby-identifier">:fjp</span>, <span class="ruby-value">1</span>],[<span class="ruby-value">23</span>,<span class="ruby-value">354</span>,<span class="ruby-value">0</span>], <span class="ruby-identifier">:ni</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-value">2</span>
+    <span class="ruby-ivar">@vm</span>.<span class="ruby-identifier">x</span>
+    <span class="ruby-identifier">assert_ni</span> <span class="ruby-value">1</span>
+    <span class="ruby-identifier">assert_stack</span> [<span class="ruby-value">23</span>,<span class="ruby-value">354</span>]
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

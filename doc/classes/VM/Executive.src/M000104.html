@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>x (VM::Executive)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/vm/executive.rb, line 42</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">x</span>
+      <span class="ruby-keyword kw">if</span>(<span class="ruby-identifier">code</span>[<span class="ruby-identifier">ni</span>].<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">Symbol</span>)
+          <span class="ruby-identifier">args</span> = []
+          <span class="ruby-keyword kw">for</span> <span class="ruby-identifier">j</span> <span class="ruby-keyword kw">in</span> (<span class="ruby-identifier">ni</span><span class="ruby-operator">+</span><span class="ruby-value">1</span><span class="ruby-operator">...</span><span class="ruby-identifier">code</span>.<span class="ruby-identifier">length</span>)
+            <span class="ruby-keyword kw">break</span> <span class="ruby-keyword kw">if</span>(<span class="ruby-identifier">code</span>[<span class="ruby-identifier">j</span>].<span class="ruby-identifier">is_a?</span> <span class="ruby-constant">Symbol</span>)
+            <span class="ruby-identifier">args</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">code</span>[<span class="ruby-identifier">j</span>]
+          <span class="ruby-keyword kw">end</span>
+          <span class="ruby-ivar">@jump</span> = <span class="ruby-keyword kw">false</span>
+          <span class="ruby-keyword kw">begin</span>
+          <span class="ruby-identifier">method</span>(<span class="ruby-identifier">code</span>[<span class="ruby-identifier">ni</span>]).<span class="ruby-identifier">call</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+<span class="ruby-comment cmt">#          rescue NameError =&gt; e</span>
+<span class="ruby-comment cmt">#            err = ExecuteError.new(&quot;Unidentified instruction:&quot;+e.to_s[/`.*?'/]+' at instruction #'+ni.to_s)</span>
+<span class="ruby-comment cmt">#            err.set_backtrace(e.backtrace)</span>
+<span class="ruby-comment cmt">#            raise err</span>
+          <span class="ruby-keyword kw">end</span>
+          <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">ni</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-ivar">@jump</span>
+      <span class="ruby-keyword kw">else</span>
+          <span class="ruby-identifier">raise</span> <span class="ruby-constant">ExecuteError</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">'Tried to execute non-instruction:`'</span><span class="ruby-operator">+</span><span class="ruby-identifier">code</span>[<span class="ruby-identifier">ni</span>].<span class="ruby-identifier">to_s</span><span class="ruby-operator">+</span><span class="ruby-value str">'` at #'</span><span class="ruby-operator">+</span><span class="ruby-identifier">ni</span>.<span class="ruby-identifier">to_s</span><span class="ruby-operator">+</span><span class="ruby-value str">'. Probably an instruction had a wrong number of arguments at the previous step'</span>)
+      <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

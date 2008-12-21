@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>test_loda (StackInstructionsTest)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File test/vm/stack_instructions_test.rb, line 22</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">test_loda</span>
+    <span class="ruby-identifier">runvm</span> [<span class="ruby-identifier">:loda</span>, <span class="ruby-value">2</span>, <span class="ruby-value">2</span>], [<span class="ruby-value">10</span>,<span class="ruby-value">11</span>,<span class="ruby-value">12</span>,<span class="ruby-value">13</span>,<span class="ruby-value">14</span>,<span class="ruby-value">15</span>,<span class="ruby-value">16</span>,<span class="ruby-value">17</span>,<span class="ruby-value">18</span>,<span class="ruby-value">19</span>], <span class="ruby-identifier">:base</span> =<span class="ruby-operator">&gt;</span> [[<span class="ruby-value">1</span>,<span class="ruby-value">2</span>],[<span class="ruby-value">2</span>,<span class="ruby-value">4</span>],[<span class="ruby-value">3</span>,<span class="ruby-value">7</span>]]
+    <span class="ruby-identifier">assert_stack</span> [<span class="ruby-value">10</span>,<span class="ruby-value">11</span>,<span class="ruby-value">12</span>,<span class="ruby-value">13</span>,<span class="ruby-value">14</span>,<span class="ruby-value">15</span>,<span class="ruby-value">16</span>,<span class="ruby-value">17</span>,<span class="ruby-value">18</span>,<span class="ruby-value">19</span>]<span class="ruby-operator">+</span>[<span class="ruby-constant">StackAddress</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">6</span>)]
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>
