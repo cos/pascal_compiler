@@ -4,11 +4,13 @@
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
 require 'test/unit'
+require 'atoms'
 require 'syntactic_analyzer'
 require 'lexical_analyzer'
+require 'mocha'
 
 class SyntacticAnalyzerTest < Test::Unit::TestCase
-
+  include Atom
 #  def test_very_simple
 #    SyntacticAnalyzer.parse(LexicalAnalyzer.parse('program test;begin end. '))
 #  end
@@ -24,8 +26,8 @@ class SyntacticAnalyzerTest < Test::Unit::TestCase
   def test_complex
     test = <<-TESTTEST
     program bla;
-      const a=7;
-      a:integer;
+      const ab=7;
+      var a:integer;
       begin
         a := 5;
       end.
@@ -37,8 +39,8 @@ class SyntacticAnalyzerTest < Test::Unit::TestCase
   def test_complex1
     test = <<-TESTTEST
     program bla;
-      const a=7;
-      a:integer;
+      const ab=7;
+      var a:integer;
 
       procedure bla(b:integer);
       begin
@@ -51,5 +53,14 @@ class SyntacticAnalyzerTest < Test::Unit::TestCase
     TESTTEST
 
     SyntacticAnalyzer.parse(LexicalAnalyzer.parse(test))
+  end
+
+  def setup
+    @sa = SyntacticAnalyzer.new([])
+  end
+
+  def test_i1
+    @sa.expects(:method).with(:bla).returns(lambda{ true })
+    assert @sa.i(:bla)
   end
 end

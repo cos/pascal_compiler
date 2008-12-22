@@ -1,4 +1,5 @@
 require 'nonterminals'
+require 'symbol_table'
 
 class SyntacticAnalyzer
   include Nonterminals
@@ -9,6 +10,7 @@ class SyntacticAnalyzer
     @line_no = 1
     @non_terminals_stack = []
     @st = SymbolTable.new
+    @current_atom_index = 0
   end
 
   attr_accessor :st
@@ -45,24 +47,35 @@ class SyntacticAnalyzer
       i(arg||exe)
     rescue SyntaxError
       @current_atom_index = cur_index
+      nil
     end
   end
 
   # 0 or more
   def several(what)
     begin
+      a = []
       while true
         cur_index = @current_atom_index
-        i(what)
+        a << i(what)
       end
     rescue SyntaxError
       @current_atom_index = cur_index
+      a
     end
   end
 
   class SyntaxError < Exception
     def initialize(expected, actual, line)
       super('Expected '+expected+ ' was '+actual+' on line '+line)
+      @expected, @actual, @line = expected, actual, line
+    end
+    attr_reader :expected, :actual, :line
+  end
+
+  class TypeError < Exception
+    def initialize(expected, actual, line)
+      super('Expected type '+(expected*' or ')+ ', was '+actual+' on line '+line)
       @expected, @actual, @line = expected, actual, line
     end
     attr_reader :expected, :actual, :line
@@ -74,6 +87,10 @@ class SyntacticAnalyzer
     exception = SyntaxError.new(expected, actual, line)
     @atoms_errors[@current_atom_index] << exception
     raise exception
+  end
+
+  def type_error(expected, actual)
+    raise TypeError.new(expected,actual,@line_no)
   end
 
   def deepest_errors
@@ -94,13 +111,13 @@ class SyntacticAnalyzer
     if v.is_a? Symbol
       method(v).call
     elsif v.is_a? Array
-      v.each {|vi| i(vi)}
+      v.collect {|vi| i(vi)}
     elsif v.is_a? Class
-      require v; n; v
+      require v; val = a; n; val
     elsif v.is_a? Proc
       v.call
     else
-      require v; n; v
+      require v; val = a; n; val
     end
   end
 
@@ -110,12 +127,12 @@ class SyntacticAnalyzer
     variants.each do |v|
       begin
         cur_index = @current_atom_index
-        i(v)
+        a = i(v)
       rescue SyntaxError => e
         err = e
         @current_atom_index = cur_index
       else
-        return
+        return a
       end
     end
     raise err

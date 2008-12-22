@@ -113,8 +113,9 @@ class StateMachine
       }],
 
     :additive => [{  
-        /\d/ => :integer },{
+#        /\d/ => :integer },{
         ELSE => :done  }],
+
     :multiplicative => [{  ELSE => :done  }],
     :round_bracket => [{  ELSE => :done  }],
     :squere_bracket => [{  ELSE => :done  }],

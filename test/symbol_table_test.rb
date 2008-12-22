@@ -16,7 +16,7 @@ class SymbolTableTest < Test::Unit::TestCase
     assert_equal({:name => 'tralala'}, @st.a[1]['tralala'])
   end
   def test_add_not_working
-    assert_raises(NameError) do |i|
+    assert_raise(NameError) do |i|
       @st << {:name => 'bla'}
     end
   end

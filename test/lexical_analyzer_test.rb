@@ -4,6 +4,7 @@ require 'test/unit'
 require 'lexical_analyzer'
 
 class LexicalAnalyzerTest < Test::Unit::TestCase
+  include Atom
 
   def test_simple
     assert_equal [45], LexicalAnalyzer.parse('45 ')
@@ -12,10 +13,15 @@ class LexicalAnalyzerTest < Test::Unit::TestCase
     assert_equal [45,56], LexicalAnalyzer.parse('45 56 ')
   end
   def test_with_plus
-    assert_equal [45,56,3434], LexicalAnalyzer.parse('45 56 +3434 ')
+    assert_equal [45,56,Operator['+'],3434], LexicalAnalyzer.parse('45 56 +3434 ')
   end
+
+  def test_plus
+    assert_equal [5, Atom::Operator['+'], 7], LexicalAnalyzer.parse('5+7 ')
+  end
+
   def test_with_minus
-    assert_equal [45,-56], LexicalAnalyzer.parse('45 -56 ')
+    assert_equal [45,Operator['-'],56], LexicalAnalyzer.parse('45 -56 ')
   end
   def test_float_simple
     assert_equal [34.5], LexicalAnalyzer.parse('34.5 ')
