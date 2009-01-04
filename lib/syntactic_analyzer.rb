@@ -11,9 +11,12 @@ class SyntacticAnalyzer
     @non_terminals_stack = []
     @st = SymbolTable.new
     @current_atom_index = 0
+
+    @vm_code = []
   end
 
   attr_accessor :st
+  attr_accessor :vm_code
 
   def self.parse(atom_resource)
     SyntacticAnalyzer.new(atom_resource).analize
@@ -44,9 +47,11 @@ class SyntacticAnalyzer
   def opt(arg,&exe)
     begin
       cur_index = @current_atom_index
+      cur_code_length = self.vm_code.length
       i(arg||exe)
     rescue SyntaxError
       @current_atom_index = cur_index
+      self.vm_code = self.vm_code[0...cur_code_length]
       nil
     end
   end
@@ -57,9 +62,11 @@ class SyntacticAnalyzer
       a = []
       while true
         cur_index = @current_atom_index
+        cur_code_length = self.vm_code.length
         a << i(what)
       end
     rescue SyntaxError
+      self.vm_code = self.vm_code[0...cur_code_length]
       @current_atom_index = cur_index
       a
     end
@@ -75,7 +82,8 @@ class SyntacticAnalyzer
 
   class TypeError < Exception
     def initialize(expected, actual, line)
-      super('Expected type '+(expected*' or ')+ ', was '+actual+' on line '+line)
+      expected = [expected] unless expected.is_a? Array
+      super('Expected type '+(expected*' or ')+ ', was '+actual+' on line '+line.to_s)
       @expected, @actual, @line = expected, actual, line
     end
     attr_reader :expected, :actual, :line
@@ -119,6 +127,10 @@ class SyntacticAnalyzer
     else
       require v; val = a; n; val
     end
+
+  rescue SymbolTable::IdentifierError
+    $!.line = @line_no    
+    raise $!
   end
 
   def one_of(*variants)
@@ -138,5 +150,34 @@ class SyntacticAnalyzer
     raise err
   end
 
+  # generate code instruction
+  def g(*args)
+    self.vm_code += args
+  end
 
+  # get the next code index or insert before the given index
+  def gi(*args)
+    if(args.empty?)
+      self.vm_code.length
+    else
+      self.vm_code.insert(args.shift, *args)
+    end
+  end
+
+  def correct_type(array)
+    current = nil
+    (array).each do |t|
+      current = t if current.nil?
+      case current
+        when :string:
+            type_error(:string, t) if t != :string
+        when :integer:
+            type_error([:real, :string], :string) if t == :string
+            current = :real if t == :real
+        when :real:
+            type_error([:real, :string], :string) if t == :string
+      end
+    end
+    current
+  end
 end

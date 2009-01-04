@@ -13,7 +13,7 @@ class SymbolTableTest < Test::Unit::TestCase
   end
   def test_add
     @st << {:name => 'tralala'}
-    assert_equal({:name => 'tralala'}, @st.a[1]['tralala'])
+    assert_equal({:name => 'tralala', :level => 1, :rel_address => 1}, @st.a[1]['tralala'])
   end
   def test_add_not_working
     assert_raise(NameError) do |i|

@@ -4,7 +4,9 @@ module Nonterminals
   include Atom
 
   def program_sursa
+    x = gi
     i [Keyword.program, Identifier, Limit[';'], :bloc, Limit['.']]
+    gi x, :rbm, st.l[0].length, 1
   end
   def bloc
     i [:sectiune_const, :sectiune_var, :sectiune_decl_subprog, :instr_comp]    
@@ -83,19 +85,24 @@ module Nonterminals
   end
   def declar_functie    
     a = i [Keyword.function, :antet_subprog, Limit[':'], :tip_simplu, Limit[';']]
+    st << ({
+        :name => a[1][:name].name,
+        :type => a[3].name.intern,
+        :class => :function,
+        :rel_address => -1
+      })
     procedure_function_common_block(a)
   end
   def declar_procedura
     a = i [Keyword.procedure, :antet_subprog, Limit[';']]
+    st << ({
+        :name => a[1][:name].name,
+        :class => :function,
+      })
     procedure_function_common_block(a)
   end
   
-  def procedure_function_common_block(a)
-    st << ({
-        :name => a[1][:name].name,
-        :type => (a[3].name.intern rescue nil),
-        :class => :function
-      })
+  def procedure_function_common_block(a)    
     st.level_up
     a[1][:params].each do |par|
       st << par
@@ -172,6 +179,7 @@ module Nonterminals
       val = -val if a[0] == Operator['-']
       a = val
     end
+    g :lodi, a
     a
   end
   def instr_comp
@@ -187,32 +195,33 @@ module Nonterminals
     one_of :instr_atrib, :instr_if, :instr_while, :instr_repeat, :instr_for, :instr_case, :instr_comp
   end
   def instr_atrib
-    i [:variabila, Operator[':='], :expresie]
+    a = i [:variabila, Operator[':='], :expresie]
+    correct_type([a[0],a[2]])
+    g :sto
   end
   def variabila
-    one_of [Identifier, Operator['['], :expresie, Operator[']']],
+    a = one_of [Identifier, Operator['['], :expresie, Operator[']']],
       [Identifier,Operator['.'], Identifier],
       Identifier
-  end
-  def expresie
-    current = nil
-    ([i(:termen)]+ several([:op_ad, :termen]).collect{|i| i[1]}).each do |t|
-      current = t if current.nil?
-      case current
-        when :string:
-            throw TypeError.new(:string, t) if t != :string
-        when :integer:
-            throw TypeError.new([:real, :string], :string) if t == :string
-            current = :real if t == :real
-        when :real:
-            throw TypeError.new([:real, :string], :string) if t == :string
+
+    if(a.is_a? Identifier)
+      var = st[a]
+      if(var[:class] == :function)
+        raise type_error("function", "procedure") if var[:type].nil?
+        g :loda, st.level, var[:rel_address]
+      else
+        g :loda, var[:level], var[:rel_address]
       end
+      var[:type]
+    else
+      raise 'Not implemented yet'
     end
-    current
+  end
+  def expresie    
+    correct_type([i(:termen)]+ several([:op_ad, :termen]).collect{|i| i[1]})
   end
   def termen
-    i :factor
-    several [:op_mul, :factor]
+    correct_type([i(:factor)]+ several([:op_mul, :factor]).collect{|i| i[1]})
   end
   def factor
     a = one_of :constanta,                                                # ok
@@ -222,13 +231,35 @@ module Nonterminals
       [Identifier, Limit['.'], Identifier],
       Identifier
 
-
-    # XXX Aici am ramas
-#    a = a[1] if a[1].is_a? Numeric
-#    (return a.is_a? Integer ? :integer : :float) if a.is_a? Numeric
-
-
-
+    a = a[1] if(a.is_a?(Array) && a.length == 3)    
+    
+    if a.is_a? Symbol
+      a
+    elsif a.is_a? Identifier
+      case st[a][:class]
+      when :constant:
+        g :lodi, st[a][:value]
+      when :variable:
+        g :lod, st[a][:level], st[a][:rel_address]
+      when :address_param:
+        g :lod, st[a][:level], st[a][:rel_address]
+      when :value_param:
+        g :lod, st[a][:level], st[a][:rel_address]
+      when :function:
+        raise 'Todo'
+      else
+        raise 'Somethind else'+st[a].inspect+'||'+a.inspect.to_s
+      end
+      st[a][:type]
+    elsif a.is_a? String
+      :string
+    elsif a.is_a? Float
+      :real
+    elsif a.is_a? Integer
+      :integer
+    else
+      raise 'Some kind of error'
+    end
   end
   def lista_expresii
     i :expresie

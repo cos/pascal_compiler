@@ -44,7 +44,7 @@ class SyntacticAnalyzerTest < Test::Unit::TestCase
 
       procedure bla(b:integer);
       begin
-        e:=b+b ;
+        a:=b+b ;
       end;
 
       begin

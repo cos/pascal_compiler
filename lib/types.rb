@@ -20,4 +20,7 @@ class StackAddress
   def <=>(another)
     @no <=> another.to_int
   end
+  def [](value)
+    StackAddress.new(value)
+  end
 end

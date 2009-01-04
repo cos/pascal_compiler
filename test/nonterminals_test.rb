@@ -101,7 +101,8 @@ class NonterminalsTest < Test::Unit::TestCase
         {
         :name => 'bla',
         :type => :real,
-        :class => :function
+        :class => :function,
+        :rel_address => -1
         })
     @sa.st.expects(:<<).with(
         {
@@ -109,6 +110,8 @@ class NonterminalsTest < Test::Unit::TestCase
         :type => :integer,
         :class => :value_param
         })
+
+    @sa.st.stubs(:[]).returns({})
 
     @sa.declar_functie
   end
@@ -118,8 +121,7 @@ class NonterminalsTest < Test::Unit::TestCase
 
     @sa.st.expects(:<<).with(
         {
-        :name => 'bla',
-        :type => nil,
+        :name => 'bla',        
         :class => :function
         })
     @sa.st.expects(:<<).with(
@@ -128,6 +130,8 @@ class NonterminalsTest < Test::Unit::TestCase
         :type => :integer,
         :class => :value_param
         })
+
+    @sa.st.stubs(:[]).returns({})
 
     @sa.declar_procedura
   end
@@ -141,6 +145,7 @@ class NonterminalsTest < Test::Unit::TestCase
   def test_constanta
     @sa.stubs(:a).returns 5    
     assert_equal 5, @sa.constanta
+    assert_code [:lodi, 5]
   end
 
   def test_expresie_statica
@@ -165,12 +170,12 @@ class NonterminalsTest < Test::Unit::TestCase
 
   def test_expresie_statica4
     set('5*-3')
-    assert_equal -15, @sa.expresie_statica
+    assert_equal(-15, @sa.expresie_statica)
   end
 
   def test_expresie_statica5
     set('-5*(-3+7)')
-    assert_equal -20, @sa.expresie_statica
+    assert_equal(-20 , @sa.expresie_statica)
   end
 
   def test_termen_static1
@@ -210,5 +215,103 @@ class NonterminalsTest < Test::Unit::TestCase
 
   def set(string)
     @sa = SyntacticAnalyzer.new(LexicalAnalyzer.parse(string+' '))
+  end
+
+  def test_factor1
+    set '5'
+    assert_equal :integer, @sa.factor
+  end
+
+  def test_factor2
+    set '5.5'
+    assert_equal :real, @sa.factor
+  end
+
+  def test_factor3
+    set 'bla'
+    @sa.st << {:name => "bla", :type => :real, :class => :variable}
+    assert_equal :real, @sa.factor
+  end
+
+  def test_factor4
+    set '(bla)'
+    @sa.st << {:name => "bla", :type => :real, :class => :variable}
+    assert_equal :real, @sa.factor
+  end
+
+  def test_program
+    set('program bla; var a:integer; begin a:=5; end.')
+    @sa.analize
+    assert_code [:rbm, 1, 1]
+  end
+
+  def test_variabila1
+    set('program bla; var a:integer; begin a:=5; end.')
+    @sa.analize
+    assert_code [:loda, 0, 0]
+  end
+
+  def test_variabila2
+    set('program bla; var a:integer; begin b:=5; end.')
+    assert_raise SymbolTable::IdentifierError do
+      @sa.analize
+    end
+  end
+
+  def test_instr_atrib
+    set('program bla; var a:integer; begin a:=5; end.')
+    @sa.analize
+    assert_code [:loda, 0, 0, :lodi, 5, :sto]
+  end
+
+  def test_instr_atrib1
+    set('program bla; var a:string; begin a:=5; end.')
+    assert_raise TypeError do
+      @sa.analize
+    end
+  end
+
+  def test_instr_atrib2
+    set('program bla; var a:real; begin a:=5; end.')
+    @sa.analize
+    assert_code [:loda, 0, 0, :lodi, 5, :sto]
+  end
+
+  def test_instr_atrib3
+    set('program bla; var a:real; procedure bla(i:integer); begin i:=3; end; begin a:=5; end.')
+    @sa.analize
+    assert_code [:loda, 1, 0, :lodi, 3, :sto]
+  end
+
+  def test_instr_atrib3
+    set('program bla; var a:real; procedure bla(i:integer); begin i:=a; end; begin a:=5; end.')
+    @sa.analize
+    assert_code [:loda, 1, 0, :lod, 0, 0, :sto]
+  end
+
+  def test_instr_atrib4
+    set('program bla; var a:real; procedure bla(i:integer); begin bla:=a; end; begin a:=5; end.')
+
+    assert_raise SyntacticAnalyzer::TypeError do
+      @sa.analize
+    end
+  end
+
+  def test_instr_atrib5
+    set('program bla; var a:real; function bla(i:integer):real; begin bla:=i; end; begin a:=5; end.')
+    @sa.analize
+    assert_code [:loda, 1, -1, :lod, 1, 0, :sto]
+  end
+
+  def assert_code(arr)
+    no = 0
+    @sa.vm_code.each do |el|
+      if no!=0 && el != arr[no]
+        assert_equal arr.length, no, "Couldn find code sequence "+arr.inspect+" in "+@sa.vm_code.inspect
+        return
+      end
+      no += 1 if el == arr[no]
+    end
+    assert_equal arr.length, no, "Couldn find code sequence "+arr.inspect+" in "+@sa.vm_code.inspect
   end
 end
